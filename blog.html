@@ -24,6 +24,13 @@
         <a href="upload.html" class="button">Upload a Run</a>
       </div>
 
+      <section class="blog-intro">
+        <p>
+          This blog highlights selected Morning Run Club runs. 
+          Not every weekly run is photographed or posted. As the club grows, posts include more data to help measure impact and progress. 
+        </p>
+      </section>
+
       <section id="blog-posts"></section>
     </main>
 
@@ -39,7 +46,28 @@
       <label for="editDate">Date:</label>
       <input type="date" id="editDate">
 
-      <label for="editCaption">Caption:</label>
+      <label for="editRunType">Run Type:</label>
+      <select id="editRunType">
+        <option value="Monday Morning Run">Monday Morning Run</option>
+        <option value="Charity Race">Charity Race</option>
+        <option value="Race Prep">Race Prep</option>
+        <option value="Season Recap">Season Recap</option>
+        <option value="Announcement">Announcement</option>
+      </select>
+
+      <label for="editVerse">Verse:</label>
+      <input type="text" id="editVerse">
+
+      <label for="editDistance">Distance:</label>
+      <input type="text" id="editDistance">
+
+      <label for="editRunners">Runners Present:</label>
+      <input type="text" id="editRunners">
+
+      <label for="editWeather">Weather / Conditions:</label>
+      <input type="text" id="editWeather">
+
+      <label for="editCaption">Caption / Reflection:</label>
       <textarea id="editCaption"></textarea>
 
       <label>Current Images:</label>
@@ -133,27 +161,38 @@
 
           entry.innerHTML = `
             <h2>${new Date(post.date).toLocaleDateString()}</h2>
+
+            <div class="post-meta">
+              <div><strong>Type:</strong> ${escapeHTML(post.runType || "Not recorded")}</div>
+              <div><strong>Verse:</strong> ${escapeHTML(post.verse || "Not recorded")}</div>
+              <div><strong>Distance:</strong> ${escapeHTML(post.distance || "Not recorded")}</div>
+              <div><strong>Runners:</strong> ${escapeHTML(post.runners || "Not recorded")}</div>
+              <div><strong>Conditions:</strong> ${escapeHTML(post.weather || "Not recorded")}</div>
+            </div>
+
             <div class="image-gallery"></div>
-            <p>${escapeHTML(post.caption)}</p>
+
+            <p class="post-caption">${escapeHTML(post.caption)}</p>
+
             <div class="post-actions">
               <button class="edit-btn" data-id="${id}">✏️ Edit</button>
               <button class="delete-btn" data-id="${id}">🗑️ Delete</button>
             </div>
           `;
 
-        const gallery = entry.querySelector(".image-gallery");
+          const gallery = entry.querySelector(".image-gallery");
 
-        if (Array.isArray(post.imageUrls)) {
-          post.imageUrls.forEach(url => {
-            const img = document.createElement("img");
-            img.src = url;
-            img.alt = "Run photo";
-            gallery.appendChild(img);
-          });
-        }
+          if (Array.isArray(post.imageUrls)) {
+            post.imageUrls.forEach(url => {
+              const img = document.createElement("img");
+              img.src = url;
+              img.alt = "Run photo";
+              gallery.appendChild(img);
+            });
+          }
 
-        container.appendChild(entry);
-      });
+          container.appendChild(entry);
+        });
     }
 
     async function openEditModal(id) {
@@ -176,6 +215,11 @@
       currentEditPost = post;
 
       document.getElementById("editDate").value = formatDateForInput(post.date);
+      document.getElementById("editRunType").value = post.runType || "Monday Morning Run";
+      document.getElementById("editVerse").value = post.verse || "";
+      document.getElementById("editDistance").value = post.distance || "";
+      document.getElementById("editRunners").value = post.runners || "";
+      document.getElementById("editWeather").value = post.weather || "";
       document.getElementById("editCaption").value = post.caption || "";
       document.getElementById("editNewPhotos").value = "";
       document.getElementById("editStatus").innerText = "";
@@ -215,6 +259,11 @@
       const status = document.getElementById("editStatus");
       const caption = document.getElementById("editCaption").value.trim();
       const dateValue = document.getElementById("editDate").value;
+      const runType = document.getElementById("editRunType").value;
+      const verse = document.getElementById("editVerse").value.trim();
+      const distance = document.getElementById("editDistance").value.trim();
+      const runners = document.getElementById("editRunners").value.trim();
+      const weather = document.getElementById("editWeather").value.trim();
       const newFiles = document.getElementById("editNewPhotos").files;
 
       if (!caption) {
@@ -251,6 +300,11 @@
         await db.ref(`posts/${currentEditId}`).update({
           caption: caption,
           date: new Date(dateValue + "T12:00:00").toISOString(),
+          runType: runType,
+          verse: verse,
+          distance: distance,
+          runners: runners,
+          weather: weather,
           imageUrls: updatedImageUrls
         });
 

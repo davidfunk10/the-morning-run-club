@@ -8,6 +8,7 @@
   <title>Upload Run Photo</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <!-- Firebase core SDK -->
 <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-app-compat.js"></script>
 <!-- Firebase Realtime Database SDK -->
@@ -25,7 +26,6 @@
     measurementId: "G-YYV6TS45EX"
   };
 
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 </script>
@@ -36,16 +36,38 @@
     const pass = prompt("Enter password to upload:");
     if (pass !== "runforGod") {
       alert("Incorrect password");
-      window.location.href = "index.html"; // Editable: Redirect to home if password is incorrect
+      window.location.href = "index.html";
     }
   </script>
 
   <h1>Upload a Run</h1>
+
   <form id="uploadForm">
     <label for="photo">Photo:</label>
     <input type="file" id="photo" accept="image/*" multiple required>
 
-    <label for="caption">Caption:</label>
+    <label for="runType">Run Type:</label>
+    <select id="runType" required>
+      <option value="Monday Morning Run">Monday Morning Run</option>
+      <option value="Charity Race">Charity Race</option>
+      <option value="Race Prep">Race Prep</option>
+      <option value="Season Recap">Season Recap</option>
+      <option value="Announcement">Announcement</option>
+    </select>
+
+    <label for="verse">Verse:</label>
+    <input type="text" id="verse" placeholder="Example: Hebrews 12:1">
+
+    <label for="distance">Distance:</label>
+    <input type="text" id="distance" placeholder="Example: 2.1 miles or Not recorded">
+
+    <label for="runners">Runners Present:</label>
+    <input type="text" id="runners" placeholder="Example: 3 or Not recorded">
+
+    <label for="weather">Weather / Conditions:</label>
+    <input type="text" id="weather" placeholder="Example: Cool and clear">
+
+    <label for="caption">Caption / Reflection:</label>
     <textarea id="caption" required></textarea><br>
 
     <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1rem;">
@@ -67,38 +89,57 @@
       e.preventDefault();
 
       const files = document.getElementById('photo').files;
-      const caption = document.getElementById('caption').value;
+      const runType = document.getElementById('runType').value;
+      const verse = document.getElementById('verse').value.trim();
+      const distance = document.getElementById('distance').value.trim();
+      const runners = document.getElementById('runners').value.trim();
+      const weather = document.getElementById('weather').value.trim();
+      const caption = document.getElementById('caption').value.trim();
       const uploadedImageUrls = [];
 
       status.innerText = 'Uploading images...';
 
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', UPLOAD_PRESET);
+      try {
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('upload_preset', UPLOAD_PRESET);
 
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-          method: 'POST',
-          body: formData
+          const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await res.json();
+
+          if (!data.secure_url) {
+            throw new Error("Cloudinary upload failed.");
+          }
+
+          uploadedImageUrls.push(data.secure_url);
+        }
+
+        status.innerText = 'Saving blog post...';
+
+        const newPostRef = db.ref('posts').push();
+        await newPostRef.set({
+          imageUrls: uploadedImageUrls,
+          runType: runType,
+          verse: verse,
+          distance: distance,
+          runners: runners,
+          weather: weather,
+          caption: caption,
+          date: new Date().toISOString()
         });
 
-        const data = await res.json();
-        uploadedImageUrls.push(data.secure_url);
+        status.innerText = 'Upload successful!';
+        form.reset();
+      } catch (error) {
+        console.error(error);
+        status.innerText = 'Something went wrong. Check the console.';
       }
-
-      status.innerText = 'Saving blog post...';
-
-      const newPostRef = db.ref('posts').push();
-      await newPostRef.set({
-        imageUrls: uploadedImageUrls,
-        caption: caption,
-        date: new Date().toISOString()
-      });
-
-      status.innerText = 'Upload successful!';
-      form.reset();
     });
-
   </script>
 </body>
 
