@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Our Impact – Morning Run Club</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="page-container">
+    <header>
+      <h1>Our Impact</h1>
+      <p>A look at what Morning Run Club has done so far.</p>
+      <nav>
+        <a href="index.html">Home</a> |
+        <a href="blog.html">Blog</a> |
+        <a href="mission.html">Our Mission</a> |
+        <a href="our-impact.html">Our Impact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="impact-hero">
+        <h2>How the Club Has Grown</h2>
+        <p>
+          Morning Run Club started as a simple idea: meet before school, share a Bible verse,
+          and run together. Since then, the club has grown through weekly runs, a charity race,
+          and a small group of students committed to showing up consistently.
+        </p>
+      </section>
+
+      <section class="impact-stats">
+        <div class="impact-card">
+          <div class="impact-number" data-target="2740" data-prefix="$">0</div>
+          <p>Raised for charity</p>
+        </div>
+
+        <div class="impact-card">
+          <div class="impact-number" data-target="17">0</div>
+          <p>Charity race finishers</p>
+        </div>
+
+        <div class="impact-card">
+          <div class="impact-number" data-target="3">0</div>
+          <p>Core organizers</p>
+        </div>
+
+        <div class="impact-card">
+          <div class="impact-number" data-target="1">0</div>
+          <p>Charity race hosted</p>
+        </div>
+      </section>
+
+      <section class="impact-section">
+        <h2>Charity Race Impact</h2>
+        <p>
+          Morning Run Club hosted a charity race that raised $2,740 and had 17 finishers.
+          The race gave students and community members a way to use running to support a real cause.
+        </p>
+      </section>
+
+      <section class="impact-section">
+        <h2>Running Community Impact</h2>
+        <p>
+          The club meets for selected Monday morning runs before school. Not every run is posted
+          on the blog, but the goal has stayed the same: start the week with discipline,
+          movement, and community.
+        </p>
+      </section>
+
+      <section class="impact-section">
+        <h2>Faith and Leadership Impact</h2>
+        <p>
+          Before runs, members share a Bible verse to connect the morning with faith and purpose.
+          The club is still small, but the focus is on consistency, leadership, and building
+          something that can keep growing over time.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 Morning Run Club</p>
+    </footer>
+  </div>
+
+  <script>
+    function animateCounters() {
+      const counters = document.querySelectorAll(".impact-number");
+
+      counters.forEach(counter => {
+        const target = Number(counter.dataset.target);
+        const prefix = counter.dataset.prefix || "";
+        const duration = 1200;
+        const startTime = performance.now();
+
+        function updateCounter(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = 1 - Math.pow(1 - progress, 3);
+          const currentValue = Math.floor(easedProgress * target);
+
+          counter.textContent = prefix + currentValue.toLocaleString();
+
+          if (progress < 1) {
+            requestAnimationFrame(updateCounter);
+          } else {
+            counter.textContent = prefix + target.toLocaleString();
+          }
+        }
+
+        requestAnimationFrame(updateCounter);
+      });
+    }
+
+    window.addEventListener("load", animateCounters);
+  </script>
+</body>
+</html>
