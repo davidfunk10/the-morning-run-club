@@ -419,3 +419,44 @@ footer {
   color: #333;
   line-height: 1.7;
 }
+
+.support-hero {
+  max-width: 850px;
+  margin: 2rem auto 0;
+  padding: 2rem;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.support-hero h2 {
+  margin-top: 0;
+  color: #0a3d62;
+}
+
+.support-hero p {
+  line-height: 1.7;
+  color: #333;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.support-section {
+  max-width: 850px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  text-align: left;
+}
+
+.support-section h2 {
+  color: #0a3d62;
+  margin-top: 0;
+}
+
+.support-section p {
+  color: #333;
+  line-height: 1.7;
+}
