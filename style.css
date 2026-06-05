@@ -460,3 +460,74 @@ footer {
   color: #333;
   line-height: 1.7;
 }
+
+.calendar-hero {
+  max-width: 850px;
+  margin: 2rem auto 0;
+  padding: 2rem;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.calendar-hero h2 {
+  margin-top: 0;
+  color: #0a3d62;
+}
+
+.calendar-hero p {
+  line-height: 1.7;
+  color: #333;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.event-cards {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.event-card {
+  background: white;
+  padding: 1.75rem;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-top: 5px solid #0a3d62;
+  text-align: left;
+}
+
+.event-card h3 {
+  margin-top: 0;
+  color: #0a3d62;
+}
+
+.event-card p {
+  color: #333;
+  line-height: 1.6;
+}
+
+.calendar-wrapper {
+  max-width: 1000px;
+  margin: 2rem auto 4rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.calendar-embed {
+  width: 100%;
+  height: 650px;
+  border: 0;
+  border-radius: 10px;
+}
+
+@media (max-width: 700px) {
+  .calendar-embed {
+    height: 500px;
+  }
+}
