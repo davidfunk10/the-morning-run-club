@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mileage Tracker – Morning Run Club</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="page-container">
+    <header>
+      <h1>Mileage Tracker</h1>
+      <p>Tracking the miles our club runs.</p>
+      <nav>
+        <a href="index.html">Home</a> |
+        <a href="mission.html">Our Mission</a> |
+        <a href="blog.html">Blog</a> |
+        <a href="our-impact.html">Our Impact</a> |
+        <a href="who-we-support.html">Who We Support</a> |
+        <a href="calendar.html">Calendar</a> |
+        <a href="mileage-tracker.html">Mileage Tracker</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="mileage-hero">
+        <h2>Club Mileage Dashboard</h2>
+        <p>
+          This page tracks mileage from documented Morning Run Club runs. Right now, it uses the data
+          from blog posts, like distance and runners present. Later, the goal is to connect Strava so
+          runners can automatically add their miles without having to enter anything manually.
+        </p>
+      </section>
+
+      <section class="mileage-stats">
+        <div class="mileage-card">
+          <div class="mileage-number" id="officialRuns">0</div>
+          <p>Runs with mileage data</p>
+        </div>
+
+        <div class="mileage-card">
+          <div class="mileage-number" id="officialMiles">0</div>
+          <p>Official Monday miles</p>
+        </div>
+
+        <div class="mileage-card">
+          <div class="mileage-number" id="runnerAttendance">0</div>
+          <p>Runner attendance logged</p>
+        </div>
+
+        <div class="mileage-card coming-soon-card">
+          <div class="mileage-number">Soon</div>
+          <p>Total member miles coming soon</p>
+        </div>
+      </section>
+
+      <section class="tracker-section">
+        <h2>What Counts Here</h2>
+        <p>
+          Official Monday miles come from documented Morning Run Club runs. For each run, the tracker
+          uses the distance and the number of runners who were there.
+        </p>
+        <p class="tracker-formula">
+          Official Monday Miles = Distance × Runners Present
+        </p>
+        <p class="tracker-note">
+          Some older runs were posted before we started tracking distance and runners, so this page only counts runs that actually have that data.
+        </p>
+        <p>
+          Total member mileage would be different. That would include miles runners complete outside
+          Monday meetings, like regular training runs. That part is planned for later.
+        </p>
+      </section>
+
+      <section class="tracker-section">
+        <h2>Strava Integration Plan</h2>
+        <p>
+          The long-term goal is to let runners connect Strava once and have their runs automatically
+          count toward the club mileage total. That feature is not active yet because Strava API access
+          takes extra setup.
+        </p>
+        <button class="disabled-strava-button" type="button" disabled>
+          Connect Strava Coming Soon
+        </button>
+      </section>
+
+      <section class="tracker-section">
+        <h2>Recent Official Runs</h2>
+        <div id="recentRuns" class="recent-runs">
+          <p>Loading run data...</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 Morning Run Club</p>
+    </footer>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdQctV5kYz-6J1E3eyoIFQS5LMJfofZfo",
+      authDomain: "themorningrunclubwebsite.firebaseapp.com",
+      databaseURL: "https://themorningrunclubwebsite-default-rtdb.firebaseio.com",
+      projectId: "themorningrunclubwebsite",
+      storageBucket: "themorningrunclubwebsite.firebasestorage.app",
+      messagingSenderId: "176502578161",
+      appId: "1:176502578161:web:5146655e2ecf86dc0f0250",
+      measurementId: "G-YYV6TS45EX"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function parseDistance(distanceText) {
+      if (!distanceText) return null;
+
+      const match = String(distanceText).match(/[\d.]+/);
+      if (!match) return null;
+
+      const distance = Number(match[0]);
+      return Number.isFinite(distance) ? distance : null;
+    }
+
+    function parseRunners(runnersText) {
+      if (!runnersText) return null;
+
+      const match = String(runnersText).match(/\d+/);
+      if (!match) return null;
+
+      const runners = Number(match[0]);
+      return Number.isFinite(runners) ? runners : null;
+    }
+
+    function formatMiles(value) {
+      if (!Number.isFinite(value)) return "0";
+      return value.toFixed(1).replace(".0", "");
+    }
+
+    function escapeHTML(text = "") {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function loadMileageStats() {
+      const recentRunsContainer = document.getElementById("recentRuns");
+
+      try {
+        const snapshot = await db.ref("posts").once("value");
+        const postsObj = snapshot.val();
+        const posts = postsObj ? Object.values(postsObj) : [];
+
+        const mondayRuns = posts
+          .filter(post => post.runType === "Monday Morning Run")
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        let officialMiles = 0;
+        let runnerAttendance = 0;
+        let runsWithMileageData = 0;
+
+        const recentRunRows = mondayRuns.slice(0, 6).map(post => {
+          const distance = parseDistance(post.distance);
+          const runners = parseRunners(post.runners);
+          const hasMileageData = distance !== null && runners !== null;
+
+          if (hasMileageData) {
+            officialMiles += distance * runners;
+            runnerAttendance += runners;
+            runsWithMileageData += 1;
+          }
+
+          const date = post.date ? new Date(post.date).toLocaleDateString() : "Date not recorded";
+          const displayedDistance = post.distance || "Not recorded";
+          const displayedRunners = post.runners || "Not recorded";
+          const displayedVerse = post.verse || "Not recorded";
+
+          return `
+            <div class="recent-run-card">
+              <h3>${escapeHTML(date)}</h3>
+              <p><strong>Distance:</strong> ${escapeHTML(displayedDistance)}</p>
+              <p><strong>Runners:</strong> ${escapeHTML(displayedRunners)}</p>
+              <p><strong>Verse:</strong> ${escapeHTML(displayedVerse)}</p>
+            </div>
+          `;
+        });
+
+        document.getElementById("officialRuns").textContent = mondayRuns.length;
+        document.getElementById("officialMiles").textContent = formatMiles(officialMiles);
+        document.getElementById("runnerAttendance").textContent = runnerAttendance;
+
+        if (mondayRuns.length === 0) {
+          recentRunsContainer.innerHTML = "<p>No Monday runs have been documented yet.</p>";
+        } else {
+          recentRunsContainer.innerHTML = recentRunRows.join("");
+        }
+
+        if (runsWithMileageData < mondayRuns.length) {
+          recentRunsContainer.innerHTML += `
+            <p class="tracker-note">
+              Some documented runs are missing distance or runner data, so they are listed here but not counted toward official mileage.
+            </p>
+          `;
+        }
+      } catch (error) {
+        console.error(error);
+        recentRunsContainer.innerHTML = "<p>Could not load mileage data. Check the console.</p>";
+      }
+    }
+
+    loadMileageStats();
+  </script>
+</body>
+</html>
