@@ -768,3 +768,67 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+/* Contact footer */
+
+footer {
+  background-color: #222;
+  color: white;
+  text-align: center;
+  padding: 2rem 1rem 1.25rem;
+}
+
+.footer-contact {
+  max-width: 900px;
+  margin: 0 auto 1.5rem;
+}
+
+.footer-contact h2 {
+  margin: 0 0 1rem;
+  font-size: 1.4rem;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.footer-links a {
+  color: lightblue;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.footer-links a:visited {
+  color: lightblue;
+}
+
+.footer-links a:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.footer-divider {
+  color: #aaa;
+}
+
+.footer-copyright {
+  margin: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid #444;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .footer-links {
+    flex-direction: column;
+  }
+
+  .footer-divider {
+    display: none;
+  }
+}
