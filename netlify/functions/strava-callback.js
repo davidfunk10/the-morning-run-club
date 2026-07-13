@@ -1,6 +1,7 @@
 exports.handler = async function (event) {
     const code = event.queryStringParameters?.code;
     const error = event.queryStringParameters?.error;
+    const acceptedScope = event.queryStringParameters?.scope || "";
 
     if (error) {
         return {
@@ -13,6 +14,64 @@ exports.handler = async function (event) {
         return {
             statusCode: 400,
             body: "Missing authorization code from Strava."
+        };
+    }
+
+    if (!acceptedScope.includes("activity:read")) {
+        return {
+            statusCode: 400,
+            headers: {
+                "Content-Type": "text/html"
+            },
+            body: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Strava Permission Required</title>
+          <style>
+            body {
+              font-family: sans-serif;
+              background: #f4f4f4;
+              text-align: center;
+              padding: 3rem 1rem;
+            }
+
+            .card {
+              background: white;
+              max-width: 600px;
+              margin: auto;
+              padding: 2rem;
+              border-radius: 14px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            }
+
+            h1 {
+              color: #0a3d62;
+            }
+
+            a {
+              color: #0a3d62;
+              font-weight: bold;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <h1>Activity Permission Required</h1>
+            <p>
+              To count your runs toward the club mileage total, Morning Run Club needs permission
+              to view your Strava activities.
+            </p>
+            <p>
+              Please go back and keep “View data about your activities” checked.
+            </p>
+            <a href="/.netlify/functions/strava-auth">Try Connecting Again</a>
+          </div>
+        </body>
+        </html>
+      `
         };
     }
 
