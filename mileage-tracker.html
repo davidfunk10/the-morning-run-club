@@ -50,9 +50,9 @@
           <p>Runner attendance logged</p>
         </div>
 
-        <div class="mileage-card coming-soon-card">
-          <div class="mileage-number">Soon</div>
-          <p>Total member miles coming soon</p>
+        <div class="mileage-card">
+          <div class="mileage-number" id="totalMemberMiles">0</div>
+          <p>Total member miles</p>
         </div>
       </section>
 
@@ -75,15 +75,21 @@
       </section>
 
       <section class="tracker-section">
-        <h2>Strava Integration Plan</h2>
+        <h2>Connect Strava</h2>
         <p>
-          The long-term goal is to let runners connect Strava once and have their runs automatically
-          count toward the club mileage total. That feature is not active yet because Strava API access
-          takes extra setup.
+          Runners will be able to connect their Strava accounts so eligible runs can count toward
+          the club’s total member mileage. Official Monday miles and total member miles are tracked
+          separately.
         </p>
-        <button class="disabled-strava-button" type="button" disabled>
-          Connect Strava Coming Soon
+      
+        <button class="strava-button" type="button" disabled>
+          Connect Strava Account Coming Soon
         </button>
+      
+        <p class="tracker-note">
+          Strava connection is being set up. Once active, connected runners’ eligible running activities
+          will be added to the club mileage total.
+        </p>
       </section>
 
       <section class="tracker-section">
