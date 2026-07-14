@@ -35,6 +35,10 @@ async function refreshAccessToken(user) {
     const clientId = process.env.STRAVA_CLIENT_ID;
     const clientSecret = process.env.STRAVA_CLIENT_SECRET;
 
+    if (!clientId || !clientSecret) {
+        throw new Error("Missing Strava client ID or client secret.");
+    }
+
     const response = await fetch("https://www.strava.com/oauth/token", {
         method: "POST",
         headers: {
@@ -103,18 +107,33 @@ exports.handler = async function (event) {
         if (!users) {
             return {
                 statusCode: 200,
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
                     message: "No connected Strava users found.",
+                    connectedUsers: 0,
+                    activitiesFetched: 0,
                     newActivities: 0,
-                    milesAdded: 0
+                    milesAdded: 0,
+                    skippedNotRun: 0,
+                    skippedNoDistance: 0,
+                    skippedDuplicate: 0
                 })
             };
         }
 
+        let connectedUsers = 0;
+        let activitiesFetched = 0;
         let newActivities = 0;
         let milesAdded = 0;
+        let skippedNotRun = 0;
+        let skippedNoDistance = 0;
+        let skippedDuplicate = 0;
 
         for (const [athleteId, user] of Object.entries(users)) {
+            connectedUsers += 1;
+
             const userRef = db.ref(`stravaUsers/${athleteId}`);
             const accessToken = await getValidAccessToken(user, userRef);
 
@@ -139,15 +158,25 @@ exports.handler = async function (event) {
                 );
             }
 
+            activitiesFetched += activities.length;
+
             for (const activity of activities) {
-                if (!isRunningActivity(activity)) continue;
-                if (!activity.distance || activity.distance <= 0) continue;
+                if (!isRunningActivity(activity)) {
+                    skippedNotRun += 1;
+                    continue;
+                }
+
+                if (!activity.distance || activity.distance <= 0) {
+                    skippedNoDistance += 1;
+                    continue;
+                }
 
                 const activityId = String(activity.id);
                 const activityRef = db.ref(`stravaActivities/${activityId}`);
                 const existingActivity = await activityRef.once("value");
 
                 if (existingActivity.exists()) {
+                    skippedDuplicate += 1;
                     continue;
                 }
 
@@ -194,8 +223,13 @@ exports.handler = async function (event) {
             },
             body: JSON.stringify({
                 message: "Strava sync complete.",
+                connectedUsers: connectedUsers,
+                activitiesFetched: activitiesFetched,
                 newActivities: newActivities,
-                milesAdded: Number(milesAdded.toFixed(2))
+                milesAdded: Number(milesAdded.toFixed(2)),
+                skippedNotRun: skippedNotRun,
+                skippedNoDistance: skippedNoDistance,
+                skippedDuplicate: skippedDuplicate
             })
         };
     } catch (err) {

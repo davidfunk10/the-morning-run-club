@@ -872,3 +872,13 @@ footer {
   color: white;
   text-decoration: none;
 }
+
+.tracker-rules {
+  color: #333;
+  line-height: 1.7;
+  padding-left: 1.25rem;
+}
+
+.tracker-rules li {
+  margin-bottom: 0.4rem;
+}
