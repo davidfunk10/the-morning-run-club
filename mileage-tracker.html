@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mileage Tracker – Morning Run Club</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -28,9 +29,8 @@
       <section class="mileage-hero">
         <h2>Club Mileage Dashboard</h2>
         <p>
-          This page tracks mileage from documented Morning Run Club runs. Right now, it uses the data
-          from blog posts, like distance and runners present. Later, the goal is to connect Strava so
-          runners can automatically add their miles without having to enter anything manually.
+          This page tracks documented Morning Run Club mileage. Official Monday miles come from blog post data.
+          Total member miles come from eligible public Strava running activities from connected club members.
         </p>
       </section>
 
@@ -66,26 +66,27 @@
           Official Monday Miles = Distance × Runners Present
         </p>
         <p class="tracker-note">
-          Some older runs were posted before we started tracking distance and runners, so this page only counts runs that actually have that data.
+          Some older runs were posted before we started tracking distance and runners, so this page only counts runs
+          that actually have that data.
         </p>
         <p>
-          Total member mileage would be different. That would include miles runners complete outside
-          Monday meetings, like regular training runs. That part is planned for later.
+          Total member mileage is different. It includes eligible Strava running activities from connected
+          club members and is tracked separately from official Monday miles.
         </p>
       </section>
 
       <section class="tracker-section">
         <h2>Connect Strava</h2>
         <p>
-          Runners will be able to connect their Strava accounts so eligible runs can count toward
+          Runners can connect their Strava accounts so eligible runs can count toward
           the club’s total member mileage. Official Monday miles and total member miles are tracked
           separately.
         </p>
-      
+
         <a class="strava-button" href="/.netlify/functions/strava-auth">
           Connect Strava Account
         </a>
-      
+
         <p class="tracker-note">
           Connected runners’ public Strava running activities can be added to the club mileage total during syncs.
         </p>
@@ -114,30 +115,26 @@
     </main>
 
     <footer>
-  <div class="footer-contact">
-    <h2>Contact Us</h2>
+      <div class="footer-contact">
+        <h2>Contact Us</h2>
 
-    <div class="footer-links">
-      <a href="mailto:themorningrunclub.contact@gmail.com">
-        themorningrunclub.contact@gmail.com
-      </a>
+        <div class="footer-links">
+          <a href="mailto:themorningrunclub.contact@gmail.com">
+            themorningrunclub.contact@gmail.com
+          </a>
 
-      <span class="footer-divider">•</span>
+          <span class="footer-divider">•</span>
 
-      <a
-        href="https://www.instagram.com/the.morning.run.club/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        @the.morning.run.club
-      </a>
-    </div>
-  </div>
+          <a href="https://www.instagram.com/the.morning.run.club/" target="_blank" rel="noopener noreferrer">
+            @the.morning.run.club
+          </a>
+        </div>
+      </div>
 
-  <p class="footer-copyright">
-    Established 2025 &nbsp;•&nbsp; &copy; 2025–2026 Morning Run Club
-  </p>
-</footer>
+      <p class="footer-copyright">
+        Established 2025 &nbsp;•&nbsp; &copy; 2025–2026 Morning Run Club
+      </p>
+    </footer>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-app-compat.js"></script>
@@ -235,13 +232,6 @@
         document.getElementById("officialMiles").textContent = formatMiles(officialMiles);
         document.getElementById("runnerAttendance").textContent = runnerAttendance;
 
-        const clubMileageSnapshot = await db.ref("clubMileage").once("value");
-        const clubMileage = clubMileageSnapshot.val();
-
-        document.getElementById("totalMemberMiles").textContent = formatMiles(
-          Number(clubMileage?.totalMemberMiles) || 0
-        );
-
         if (mondayRuns.length === 0) {
           recentRunsContainer.innerHTML = "<p>No Monday runs have been documented yet.</p>";
         } else {
@@ -257,11 +247,33 @@
         }
       } catch (error) {
         console.error(error);
-        recentRunsContainer.innerHTML = "<p>Could not load mileage data. Check the console.</p>";
+        recentRunsContainer.innerHTML = "<p>Could not load official run data. Check the console.</p>";
+      }
+
+      try {
+        const totalMemberMilesElement = document.getElementById("totalMemberMiles");
+
+        if (totalMemberMilesElement) {
+          const clubMileageSnapshot = await db.ref("clubMileage").once("value");
+          const clubMileage = clubMileageSnapshot.val();
+
+          totalMemberMilesElement.textContent = formatMiles(
+            Number(clubMileage?.totalMemberMiles) || 0
+          );
+        }
+      } catch (error) {
+        console.error(error);
+
+        const totalMemberMilesElement = document.getElementById("totalMemberMiles");
+
+        if (totalMemberMilesElement) {
+          totalMemberMilesElement.textContent = "0";
+        }
       }
     }
 
     loadMileageStats();
   </script>
 </body>
+
 </html>

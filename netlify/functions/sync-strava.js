@@ -105,6 +105,11 @@ exports.handler = async function (event) {
         const users = usersSnapshot.val();
 
         if (!users) {
+            await db.ref("clubMileage").update({
+                totalMemberMiles: 0,
+                lastSyncedAt: new Date().toISOString()
+            });
+
             return {
                 statusCode: 200,
                 headers: {
@@ -118,7 +123,8 @@ exports.handler = async function (event) {
                     milesAdded: 0,
                     skippedNotRun: 0,
                     skippedNoDistance: 0,
-                    skippedDuplicate: 0
+                    skippedDuplicate: 0,
+                    totalMemberMiles: 0
                 })
             };
         }
@@ -207,14 +213,20 @@ exports.handler = async function (event) {
             });
         }
 
-        const clubMileageRef = db.ref("clubMileage/totalMemberMiles");
+        const allActivitiesSnapshot = await db.ref("stravaActivities").once("value");
+        const allActivities = allActivitiesSnapshot.val() || {};
 
-        await clubMileageRef.transaction(currentValue => {
-            const current = Number(currentValue) || 0;
-            return Number((current + milesAdded).toFixed(2));
+        const totalMemberMiles = Object.values(allActivities).reduce((total, activity) => {
+            if (!activity.counted) return total;
+
+            const miles = Number(activity.distanceMiles) || 0;
+            return total + miles;
+        }, 0);
+
+        await db.ref("clubMileage").update({
+            totalMemberMiles: Number(totalMemberMiles.toFixed(2)),
+            lastSyncedAt: new Date().toISOString()
         });
-
-        await db.ref("clubMileage/lastSyncedAt").set(new Date().toISOString());
 
         return {
             statusCode: 200,
@@ -229,7 +241,8 @@ exports.handler = async function (event) {
                 milesAdded: Number(milesAdded.toFixed(2)),
                 skippedNotRun: skippedNotRun,
                 skippedNoDistance: skippedNoDistance,
-                skippedDuplicate: skippedDuplicate
+                skippedDuplicate: skippedDuplicate,
+                totalMemberMiles: Number(totalMemberMiles.toFixed(2))
             })
         };
     } catch (err) {
