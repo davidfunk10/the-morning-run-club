@@ -222,6 +222,13 @@
         document.getElementById("officialMiles").textContent = formatMiles(officialMiles);
         document.getElementById("runnerAttendance").textContent = runnerAttendance;
 
+        const clubMileageSnapshot = await db.ref("clubMileage").once("value");
+        const clubMileage = clubMileageSnapshot.val();
+
+        document.getElementById("totalMemberMiles").textContent = formatMiles(
+          Number(clubMileage?.totalMemberMiles) || 0
+        );
+
         if (mondayRuns.length === 0) {
           recentRunsContainer.innerHTML = "<p>No Monday runs have been documented yet.</p>";
         } else {
