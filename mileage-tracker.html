@@ -30,14 +30,14 @@
         <h2>Club Mileage Dashboard</h2>
         <p>
           This page tracks documented Morning Run Club mileage. Official Monday miles come from blog post data.
-          Total member miles come from eligible public Strava running activities from connected club members.
+          Total club miles combine official Monday miles with eligible public Strava running activities from connected club members.
         </p>
       </section>
 
       <section class="mileage-stats">
         <div class="mileage-card">
           <div class="mileage-number" id="officialRuns">0</div>
-          <p>Runs with mileage data</p>
+          <p>Official runs logged</p>
         </div>
 
         <div class="mileage-card">
@@ -52,7 +52,7 @@
 
         <div class="mileage-card">
           <div class="mileage-number" id="totalMemberMiles">0</div>
-          <p>Total member miles</p>
+          <p>Total club miles</p>
         </div>
       </section>
 
@@ -70,8 +70,7 @@
           that actually have that data.
         </p>
         <p>
-          Total member mileage is different. It includes eligible Strava running activities from connected
-          club members and is tracked separately from official Monday miles.
+          Total club miles combine official Monday miles with eligible Strava running activities from connected club members.
         </p>
       </section>
 
@@ -79,8 +78,8 @@
         <h2>Connect Strava</h2>
         <p>
           Runners can connect their Strava accounts so eligible runs can count toward
-          the club’s total member mileage. Official Monday miles and total member miles are tracked
-          separately.
+          the club’s total club mileage. Official Monday miles and Strava member miles are tracked
+          separately, then combined into the total.
         </p>
 
         <a class="strava-button" href="/.netlify/functions/strava-auth">
@@ -88,21 +87,21 @@
         </a>
 
         <p class="tracker-note">
-          Connected runners’ public Strava running activities can be added to the club mileage total during syncs.
+          Connected runners’ public Strava running activities can be added to the Strava member mileage total during syncs.
         </p>
       </section>
 
       <section class="tracker-section">
         <h2>Strava Mileage Rules</h2>
         <p>
-          Total member miles are separate from official Monday miles. Strava mileage includes eligible
-          running activities from connected club members.
+          Strava member miles include eligible running activities from connected club members.
+          These miles are combined with official Monday miles to calculate total club miles.
         </p>
         <ul class="tracker-rules">
           <li>Only running activities count.</li>
           <li>Activities must be visible to Strava in order to sync.</li>
           <li>Runs are counted once and duplicates are ignored.</li>
-          <li>Official Monday miles are still tracked separately from total member miles.</li>
+          <li>Official Monday miles and Strava member miles are tracked separately, then combined into total club miles.</li>
         </ul>
       </section>
 
@@ -189,6 +188,8 @@
     async function loadMileageStats() {
       const recentRunsContainer = document.getElementById("recentRuns");
 
+      let officialMiles = 0;
+
       try {
         const snapshot = await db.ref("posts").once("value");
         const postsObj = snapshot.val();
@@ -198,7 +199,6 @@
           .filter(post => post.runType === "Monday Morning Run")
           .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        let officialMiles = 0;
         let runnerAttendance = 0;
         let runsWithMileageData = 0;
 
@@ -257,9 +257,10 @@
           const clubMileageSnapshot = await db.ref("clubMileage").once("value");
           const clubMileage = clubMileageSnapshot.val();
 
-          totalMemberMilesElement.textContent = formatMiles(
-            Number(clubMileage?.totalMemberMiles) || 0
-          );
+          const stravaMemberMiles = Number(clubMileage?.totalMemberMiles) || 0;
+          const totalClubMiles = officialMiles + stravaMemberMiles;
+
+          totalMemberMilesElement.textContent = formatMiles(totalClubMiles);
         }
       } catch (error) {
         console.error(error);
@@ -267,7 +268,7 @@
         const totalMemberMilesElement = document.getElementById("totalMemberMiles");
 
         if (totalMemberMilesElement) {
-          totalMemberMilesElement.textContent = "0";
+          totalMemberMilesElement.textContent = formatMiles(officialMiles);
         }
       }
     }
